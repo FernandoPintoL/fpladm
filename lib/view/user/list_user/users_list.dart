@@ -23,10 +23,12 @@ class UsersList extends StatelessWidget {
         itemBuilder: (BuildContext context, int index) {
           return CardList(
             title: listado[index].name.toString(),
-            subtitle: listado[index].email.toString(),
+            subtitle: Text(listado[index].email.toString()),
             leading: ImageComponent(
               size: 80,
               imageUrl: listado[index].profilePhotoUrl.toString(),
+              errorWidget:
+                  const CircleAvatar(child: Icon(Icons.warning_amber_sharp)),
             ),
             trailing: IconButton(
               onPressed: () async {

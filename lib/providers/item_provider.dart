@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fpladm/app/models/http_response.dart';
+import 'package:image_picker/image_picker.dart';
 import '../app/controller/item_controller.dart';
 import '../app/models/item_model.dart';
 import '../view/components/widget/dialog.dart';
@@ -13,8 +16,7 @@ class ItemProvider extends ChangeNotifier {
   bool isLoading = false;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   TextEditingController queryController = TextEditingController();
-  TextEditingController nombreController = TextEditingController();
-  TextEditingController descripcionController = TextEditingController();
+  TextEditingController detalleController = TextEditingController();
   TextEditingController precioCostoController = TextEditingController();
   TextEditingController precioVentaController = TextEditingController();
 
@@ -22,15 +24,18 @@ class ItemProvider extends ChangeNotifier {
   bool isRegister = true;
   String tittleButtom = "Registrar Item";
 
+  Uint8List? image;
+  File? selectedImage;
+  XFile? returnImage;
+
   ItemProvider() {
     cargandoLista("");
   }
 
-  void clearEditing() {
-    formKey.currentState!.reset();
+  void clearInputs() {
+    formKey.currentState?.reset();
     queryController.clear();
-    nombreController.clear();
-    descripcionController.clear();
+    detalleController.clear();
     precioCostoController.clear();
     precioVentaController.clear();
     notifyListeners();
@@ -54,7 +59,7 @@ class ItemProvider extends ChangeNotifier {
   }
 
   void openFormularioRegister() {
-    //clearInputs();
+    clearInputs();
     titleForm = "REGISTRA NUEVO ITEM";
     tittleButtom = "Registra nuevo item";
     isRegister = true;
@@ -62,8 +67,7 @@ class ItemProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void register_update_view(BuildContext context) {
-    notifyListeners();
+  void register_update_view(BuildContext context) async {
     if (!formKey.currentState!.mounted) return;
     if (formKey.currentState!.validate()) {
       if (!context.mounted) return;
@@ -81,10 +85,10 @@ class ItemProvider extends ChangeNotifier {
   }
 
   void cargarDatosItem() {
-    item.name = nombreController.text;
-    item.descripcion = descripcionController.text;
+    item.detalle = detalleController.text;
     item.precioCosto = double.tryParse(precioCostoController.text.toString())!;
     item.precioVenta = double.tryParse(precioVentaController.text.toString())!;
+    item.isHabilitado = true;
     notifyListeners();
   }
 
@@ -112,16 +116,53 @@ class ItemProvider extends ChangeNotifier {
       if (httpResponsse.success) {
         formKey.currentState!.reset();
         cargandoLista("");
-        clearEditing();
+        clearInputs();
       }
     });
   }
 
   void openFormUpdate(Item item) {
-    nombreController.text = item.name;
-    descripcionController.text = item.descripcion;
+    detalleController.text = item.detalle;
     precioCostoController.text = item.precioCosto.toString();
     precioVentaController.text = item.precioVenta.toString();
     notifyListeners();
+  }
+
+  void eliminando(BuildContext context) async {
+    print(item.toString());
+    isLoading = true;
+    notifyListeners();
+    httpResponsse = await controller.delete(item);
+    isLoading = false;
+    notifyListeners();
+    cargandoLista("");
+    if (!context.mounted) return;
+    DialogMessage.dialog(
+        context,
+        httpResponsse.success ? DialogType.success : DialogType.error,
+        httpResponsse.message.toString(),
+        httpResponsse.data.toString(),
+        () async {});
+  }
+
+  void subirImagenView(BuildContext context) async {
+    if (!formKey.currentState!.mounted) return;
+    if (formKey.currentState!.validate()) {
+      if (!context.mounted) return;
+      DialogMessage.dialog(context, DialogType.question,
+          "Estas seguro de subir esta imagen?", "", () async {
+        uploadImage();
+      });
+    }
+  }
+
+  void uploadImage() async {
+    isLoading = true;
+    notifyListeners();
+    await controller.cargarImage(item.id, selectedImage!).then((value) {
+      httpResponsse = value;
+      isLoading = false;
+      notifyListeners();
+    });
   }
 }

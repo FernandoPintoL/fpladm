@@ -2,47 +2,45 @@ import 'dart:io';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:fpladm/app/controller/user_controller.dart';
-import 'package:fpladm/app/models/http_response.dart';
-import 'package:fpladm/view/components/widget/image_component.dart';
-import 'package:fpladm/view/components/widget/loading.dart';
-import 'package:fpladm/view/config/pallet.dart';
+import 'package:fpladm/providers/item_provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../components/widget/dialog.dart';
+import 'package:provider/provider.dart';
+import '../components/widget/dialog.dart';
+import '../components/widget/image_component.dart';
+import '../components/widget/loading.dart';
+import '../config/pallet.dart';
 
-class PerfilImage extends StatefulWidget {
-  String imagePath;
+class UploadImage extends StatefulWidget {
   String name;
-  bool isUser;
+  String photoPath;
   int id;
-  UserController userController = UserController();
+  Function subirImage;
 
-  PerfilImage(
+  UploadImage(
       {super.key,
-      required this.imagePath,
       required this.name,
+      required this.photoPath,
       required this.id,
-      required this.isUser});
+      required this.subirImage});
 
   @override
-  State<PerfilImage> createState() => _PerfilImageState();
+  State<UploadImage> createState() => _UploadImageState();
 }
 
-class _PerfilImageState extends State<PerfilImage> {
+class _UploadImageState extends State<UploadImage> {
   Uint8List? image;
   File? selectedImage;
   XFile? returnImage;
   bool isLoading = false;
-  UserController userController = UserController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.name),
+        title: Text(context.read<ItemProvider>().item.detalle),
       ),
-      body: isLoading
-          ? Loading(text: "Cargando Imagen de Perfil...")
+      body: context.watch<ItemProvider>().isLoading
+          ? Loading(text: "Cargando Imagen...")
           : Center(
               child: SingleChildScrollView(
                 child: Column(
@@ -69,7 +67,7 @@ class _PerfilImageState extends State<PerfilImage> {
                               children: [
                                 const Text("component"),
                                 ImageComponent(
-                                    imageUrl: widget.imagePath,
+                                    imageUrl: widget.photoPath,
                                     errorWidget: const CircleAvatar(
                                         child:
                                             Icon(Icons.person_outline_rounded)),
@@ -111,7 +109,8 @@ class _PerfilImageState extends State<PerfilImage> {
                               DialogType.question,
                               "¿Estas seguro de subir esta imagen?",
                               "", () async {
-                            subirImagen();
+                            //subirImagen();
+                            widget.subirImage();
                           });
                         },
                         child: const Text("Subir Imagen"))
@@ -133,25 +132,6 @@ class _PerfilImageState extends State<PerfilImage> {
               padding: const EdgeInsets.all(18.0),
               child: Row(
                 children: [
-                  if (kIsWeb)
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          _pickImageFormGaleriaWeb();
-                        },
-                        child: const SizedBox(
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.image,
-                                size: 50,
-                              ),
-                              Expanded(child: Text("Galeria Web"))
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   Expanded(
                     child: InkWell(
                       onTap: () async {
@@ -195,15 +175,6 @@ class _PerfilImageState extends State<PerfilImage> {
         });
   }
 
-  void _pickImageFormGaleriaWeb() async {
-    /*if (kIsWeb) {
-      Image.network(pickedFile.path);
-    } else {
-      Image.file(File(pickedFile.path));
-    }*/
-    //FilePickerResult? result = await FilePicker.platform.pickFiles();
-  }
-
   void _pickImageFormGaleria() async {
     returnImage = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (returnImage == null) return;
@@ -225,7 +196,7 @@ class _PerfilImageState extends State<PerfilImage> {
     Navigator.of(context).pop();
   }
 
-  void subirImagen() async {
+/*void subirImagen() async {
     HttpResponsse httpResponsse = HttpResponsse();
     setState(() {
       isLoading = true;
@@ -240,5 +211,5 @@ class _PerfilImageState extends State<PerfilImage> {
     } else {
       //cargar imagen del articulo
     }
-  }
+  }*/
 }

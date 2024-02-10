@@ -3,7 +3,7 @@ import '../config/pallet.dart';
 
 class CardList extends StatelessWidget {
   String title;
-  String subtitle;
+  Widget subtitle;
   Widget trailing;
   Widget leading;
   Function function;
@@ -28,7 +28,7 @@ class CardList extends StatelessWidget {
         child: ListTile(
           leading: leading,
           title: Text(title),
-          subtitle: Text(subtitle),
+          subtitle: subtitle,
           trailing: trailing,
           onTap: () {
             function();

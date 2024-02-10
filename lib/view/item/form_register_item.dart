@@ -1,31 +1,41 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fpladm/view/page_gestion/register/register_view.dart';
+import 'package:fpladm/view/upload_image/upload_image.dart';
+import 'package:get/get.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '../../providers/item_provider.dart';
-import '../components/metodos/CustomTextFormField.dart';
 import '../components/widget/customTextFormField.dart';
 import '../components/widget/form_button.dart';
+import '../components/widget/image_component.dart';
 import '../components/widget/loading.dart';
 import '../config/pallet.dart';
+import '../user/perfil_image/perfil_image.dart';
 
 class FormRegisterUpdateItem extends StatelessWidget {
-  FormRegisterUpdateItem({super.key});
+  const FormRegisterUpdateItem({super.key});
 
   @override
   Widget build(BuildContext context) {
     return RegisterView(
         title: context.read<ItemProvider>().isRegister
             ? "Nuevo Item"
-            : "Actualiza el item : ${context.read<ItemProvider>().item.name}",
-        function: () {
-          context.read<ItemProvider>().clearEditing();
-        },
+            : "Actualiza el item : ${context.read<ItemProvider>().item.detalle}",
+        function: () {},
+        actions: [
+          IconButton(
+              tooltip: "Limpiar Formulario",
+              onPressed: () {
+                context.read<ItemProvider>().clearInputs();
+              },
+              icon: const Icon(Icons.delete_outline))
+        ],
         formulario: context.watch<ItemProvider>().isLoading
             ? Loading(
                 text: context.read<ItemProvider>().isRegister
                     ? "Registrando nuevo item..."
-                    : "Actualizando : \n${context.read<ItemProvider>().item.name}")
+                    : "Actualizando : \n${context.read<ItemProvider>().item.detalle}")
             : Form(
                 key: context.watch<ItemProvider>().formKey,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -34,45 +44,69 @@ class FormRegisterUpdateItem extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 22.0, vertical: 16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        //NOMBRE
+                        ImageComponent(
+                          size: 80,
+                          imageUrl: context
+                              .read<ItemProvider>()
+                              .item
+                              .photoPath
+                              .toString(),
+                          errorWidget: ClipOval(
+                            child: Material(
+                              color: Colors.blue,
+                              child: InkWell(
+                                splashColor: Colors.purple,
+                                onTap: () {
+                                  if (context.read<ItemProvider>().isRegister)
+                                    return;
+                                  Navigator.push(
+                                      context,
+                                      PageTransition(
+                                        child: UploadImage(
+                                          name: context
+                                              .read<ItemProvider>()
+                                              .item
+                                              .detalle,
+                                          photoPath: context
+                                              .read<ItemProvider>()
+                                              .item
+                                              .photoPath,
+                                          id: context
+                                              .read<ItemProvider>()
+                                              .item
+                                              .id,
+                                          subirImage: () {},
+                                        ),
+                                        type: PageTransitionType.scale,
+                                        alignment: Alignment.bottomCenter,
+                                        duration: const Duration(seconds: 1),
+                                      ));
+                                },
+                                child: const SizedBox(
+                                  height: 120,
+                                  width: 120,
+                                  child: Icon(
+                                    Icons.shopping_bag_outlined,
+                                    size: 70,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 50),
+
+                        //DETALLE
                         CustomFormField(
                           textController:
-                              context.watch<ItemProvider>().nombreController,
-                          typeText: TextInputType.name,
-                          textInputAction: TextInputAction.next,
-                          hintText: "producto ",
-                          label: const Text("Nombre: "),
-                          helperText: context
-                              .watch<ItemProvider>()
-                              .item
-                              .nameError
-                              .toString(),
-                          icon: const Icon(CupertinoIcons.person_alt_circle),
-                          textStyle: context
-                                  .watch<ItemProvider>()
-                                  .item
-                                  .nameError
-                                  .toString()
-                                  .isEmpty
-                              ? const TextStyle(color: Colors.white)
-                              : const TextStyle(color: Colors.redAccent),
-                          validator: (value) =>
-                              CustomText().isValidName(value!),
-                          onChanged: (value) =>
-                              CustomText().isValidName(value!),
-                        ),
-                        //DESCRIPCION
-                        CustomFormField(
-                          textController: context
-                              .watch<ItemProvider>()
-                              .descripcionController,
+                              context.watch<ItemProvider>().detalleController,
                           typeText: TextInputType.multiline,
                           textInputAction: TextInputAction.next,
-                          hintText: "Describe ",
-                          label: const Text("Descripcion: "),
+                          hintText: "Detalle ",
+                          label: const Text("Detalle: "),
                           helperText: "",
                           icon: const Icon(CupertinoIcons.text_bubble_fill),
                           textStyle: const TextStyle(color: Colors.white),
@@ -156,7 +190,9 @@ class FormRegisterUpdateItem extends StatelessWidget {
                             title: context.read<ItemProvider>().isRegister
                                 ? "Registar Item"
                                 : "Actualizar item",
-                            icon: const Icon(Icons.refresh),
+                            icon: context.read<ItemProvider>().isRegister
+                                ? const Icon(Icons.add_circle_outline)
+                                : const Icon(Icons.refresh),
                           ),
                         ),
                       ],

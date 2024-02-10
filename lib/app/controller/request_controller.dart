@@ -6,7 +6,7 @@ import 'package:path/path.dart';
 import 'package:async/async.dart';
 
 mixin RequestController {
-  String url = "http://192.168.1.22/public/api";
+  String url = "http://192.168.1.22/apisoluciones/public/api";
   Map<String, String> header = {'Content-Type': 'application/json'};
 
   //EJEMPLO POST
@@ -75,9 +75,9 @@ mixin RequestController {
       Uri ruta = Uri.parse('$url/$route');
       http.Response response = await http.post(ruta,
           headers: header, body: convert.jsonEncode(data));
-
       HttpResponsse httpResponsse =
           HttpResponsse.fromJson(convert.jsonDecode(response.body));
+      print(httpResponsse.toString());
       return httpResponsse;
     } on Exception catch (e) {
       return HttpResponsse(

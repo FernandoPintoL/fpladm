@@ -25,7 +25,7 @@ class FormButtom extends StatelessWidget {
           text: TextSpan(
             children: [
               TextSpan(
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16, color: Colors.white),
                 text: title,
               ),
               WidgetSpan(

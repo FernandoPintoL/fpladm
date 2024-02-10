@@ -5,7 +5,7 @@ import 'request_controller.dart';
 
 class ItemController with RequestController {
   List<Item> lista = [];
-  String apiRoute = 'item';
+  String apiRoute = 'items';
 
   Future<HttpResponsse> insertar(Item item) async {
     print(item.toString());

@@ -9,7 +9,6 @@ import '../components/widget/dialog.dart';
 import '../components/widget/image_component.dart';
 import '../config/pallet.dart';
 import '../page_gestion/card_list.dart';
-import 'form_update_item.dart';
 
 class ItemList extends StatelessWidget {
   List<Item> listado;
@@ -23,23 +22,38 @@ class ItemList extends StatelessWidget {
         itemCount: listado.length,
         itemBuilder: (BuildContext context, int index) {
           return CardList(
-            title: listado[index].name.toString(),
-            subtitle: "${listado[index].precioCosto} BS",
+            title: listado[index].detalle.toString(),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("${listado[index].precioCosto} BS"),
+                Text(
+                  listado[index].isHabilitado ? "Habilitado" : "Desahabilitado",
+                  style: TextStyle(
+                      color: listado[index].isHabilitado
+                          ? Colors.green
+                          : Colors.redAccent),
+                )
+              ],
+            ),
             leading: ImageComponent(
               size: 80,
               imageUrl: listado[index].photoPath.toString(),
+              errorWidget:
+                  const CircleAvatar(child: Icon(Icons.warning_amber_sharp)),
             ),
             trailing: IconButton(
               onPressed: () async {
+                String habilitar = listado[index].isHabilitado
+                    ? "Desahabilitar Item"
+                    : "Habilitar Item";
+                String contexto =
+                    "$habilitar : ${listado[index].detalle.toString().toUpperCase()}";
                 DialogMessage.dialog(
-                    context,
-                    DialogType.question,
-                    'Eliminar Categoria',
-                    'Estas seguro de eliminar ${listado[index].name.toString().toUpperCase()}?',
+                    context, DialogType.question, habilitar, contexto,
                     () async {
-                  /*context
-                          .read<ItemProvider>()
-                          .eliminando(context, listado[index]);*/
+                  context.read<ItemProvider>().item = listado[index];
+                  context.read<ItemProvider>().eliminando(context);
                 });
               },
               icon: const Icon(CupertinoIcons.delete),

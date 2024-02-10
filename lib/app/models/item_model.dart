@@ -2,7 +2,7 @@ import 'dart:convert' as convert;
 
 class Item {
   late int id;
-  late String name, descripcion, photoPath;
+  late String detalle, photoPath;
   late double precioCosto, precioVenta;
   DateTime creado = DateTime.now(), actualizado = DateTime.now();
   bool isHabilitado;
@@ -14,8 +14,7 @@ class Item {
 
   Item(
       {this.id = 0,
-      this.name = '',
-      this.descripcion = '',
+      this.detalle = '',
       this.photoPath = "",
       this.precioCosto = 0,
       this.precioVenta = 0,
@@ -25,8 +24,7 @@ class Item {
   factory Item.fromJson(Map<String, dynamic> json) {
     Item item = Item(
         id: int.tryParse(json['id'].toString())!,
-        name: json['name'].toString(),
-        descripcion: json['descripcion'].toString(),
+        detalle: json['detalle'].toString(),
         precioCosto: double.tryParse(json['precio_costo']!.toString())!,
         precioVenta: double.tryParse(json['precio_venta']!.toString())!,
         photoPath: json['photo_path'].toString(),
@@ -38,13 +36,11 @@ class Item {
   //CUANDO ENVIO A MI API
   Map<String, dynamic> toJson() => {
         'id': id.toString(),
-        'name': name,
-        'descripcion': descripcion,
+        'detalle': detalle,
         'precio_costo': precioCosto.toString(),
         'precio_venta': precioVenta.toString(),
         'photo_path': photoPath,
         'isHabilitado': isHabilitado ? '1' : '0',
-        'terms': 'accepted'
       };
 
   static List<Item> parseStringToItem(String responseBody) {
@@ -54,10 +50,8 @@ class Item {
     return list;
   }
 
-  List<Item> parseDynamicToItem(dynamic listData) {
-    List<Item> lista = listData.map<Item>((e) => Item.fromJson(e)).toList();
-    return lista;
-  }
+  List<Item> parseDynamicToItem(dynamic listData) =>
+      listData.map<Item>((e) => Item.fromJson(e)).toList();
 
   String fechaCreado() {
     return '${creado.day}/${creado.month}/${creado.year}';

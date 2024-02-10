@@ -4,8 +4,13 @@ import 'package:flutter/material.dart';
 class ImageComponent extends StatelessWidget {
   String imageUrl;
   double size;
+  Widget errorWidget;
 
-  ImageComponent({super.key, required this.imageUrl, required this.size});
+  ImageComponent(
+      {super.key,
+      required this.imageUrl,
+      required this.size,
+      required this.errorWidget});
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +32,7 @@ class ImageComponent extends StatelessWidget {
       ),
       progressIndicatorBuilder: (context, url, downloadProgress) =>
           CircularProgressIndicator(value: downloadProgress.progress),
-      errorWidget: (context, url, error) =>
-          const ClipOval(child: Icon(Icons.warning_amber, size: 50)),
+      errorWidget: (context, url, error) => errorWidget,
     );
   }
 }

@@ -35,7 +35,7 @@ class _ItemViewState extends State<ItemView> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => FormRegisterUpdateItem()),
+                    builder: (context) => const FormRegisterUpdateItem()),
               );
             },
             refrescarPagina: () {
@@ -52,7 +52,8 @@ class _ItemViewState extends State<ItemView> {
           context.read<ItemProvider>().openFormularioRegister();
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => FormRegisterUpdateItem()),
+            MaterialPageRoute(
+                builder: (context) => const FormRegisterUpdateItem()),
           );
         },
         tooltip: "Registra un nuevo item",
