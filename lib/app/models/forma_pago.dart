@@ -1,36 +1,39 @@
 import 'dart:convert' as convert;
 
-class Rol {
+class FormaPago {
   late int id;
-  late String name, guard_name;
+  late String detalle;
   DateTime creado = DateTime.now(), actualizado = DateTime.now();
 
-  Rol({this.id = 0, this.name = '', this.guard_name = ''});
+  dynamic nameError = "",
+      descripcionError = "",
+      precioCostoError = "",
+      precioVentaError = "";
 
-  factory Rol.fromJson(Map<String, dynamic> json) {
-    Rol object = Rol(
+  FormaPago({this.id = 0, this.detalle = ""});
+
+  // CUANDO RECIVO DE MI API
+  factory FormaPago.fromJson(Map<String, dynamic> json) {
+    FormaPago formaPago = FormaPago(
         id: int.tryParse(json['id']!.toString())!,
-        name: json['name'].toString(),
-        guard_name: json['guard_name'].toString());
-    return object;
+        detalle: json['detalle'].toString());
+    return formaPago;
   }
 
-  Map<String, dynamic> toJson() => {
-        'id': id.toString(),
-        'name': name.toString(),
-        'guard_name': guard_name.toString()
-      };
+  //CUANDO ENVIO A MI API
+  Map<String, dynamic> toJson() =>
+      {'id': id.toString(), 'detalle': detalle.toString()};
 
-  static List<Rol> parseResponseBody(String responseBody) {
+  static List<FormaPago> parseStringToList(String responseBody) {
     final parsed =
         convert.jsonDecode(responseBody).cast<Map<String, dynamic>>();
-    List<Rol> list = parsed.map<Rol>((json) => Rol.fromJson(json)).toList();
+    List<FormaPago> list =
+        parsed.map<FormaPago>((json) => FormaPago.fromJson(json)).toList();
     return list;
   }
 
-  List<Rol> parseRol(dynamic listData) {
-    return listData.map<Rol>((e) => Rol.fromJson(e)).toList();
-  }
+  List<FormaPago> parseDynamicToList(dynamic listData) =>
+      listData.map<FormaPago>((e) => FormaPago.fromJson(e)).toList();
 
   String fechaCreado() {
     return '${creado.day}/${creado.month}/${creado.year}';

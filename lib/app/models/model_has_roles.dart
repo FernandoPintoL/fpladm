@@ -1,35 +1,48 @@
 import 'dart:convert' as convert;
 
 class ModelHasRoles {
-  late int roleId, modelId, teamId;
-  late String modelType;
+  late int role_id, model_id, team_id;
+  late String model_type;
 
   ModelHasRoles({
-    this.roleId = 0,
-    this.modelId = 0,
-    this.teamId = 0,
-    this.modelType = '',
+    this.role_id = 0,
+    this.model_id = 0,
+    this.team_id = 0,
+    this.model_type = '',
   });
 
-  ModelHasRoles.fromJson(Map<String, dynamic> json)
-      : roleId = int.tryParse(json['role_id'].toString())!,
-        modelId = int.tryParse(json['model_id'].toString())!,
-        teamId = int.tryParse(json['team_id'].toString())!,
-        modelType = json['model_type'].toString();
+  // CUANDO RECIVO DE MI API
+  factory ModelHasRoles.fromJson(Map<String, dynamic> json) {
+    ModelHasRoles object = ModelHasRoles(
+        role_id: int.tryParse(json['role_id']!.toString())!,
+        model_id: int.tryParse(json['model_id']!.toString())!,
+        team_id: int.tryParse(json['team_id']!.toString())!,
+        model_type: json['model_type'].toString());
+    return object;
+  }
 
+  //CUANDO ENVIO A MI API
   Map<String, dynamic> toJson() => {
-        'role_id': roleId.toString(),
-        'model_id': modelId.toString(),
-        'team_id': teamId.toString(),
-        'model_type': modelType.toString()
+        'role_id': role_id.toString(),
+        'model_id': model_id.toString(),
+        'team_id': team_id.toString(),
+        'model_type': model_type.toString()
       };
 
-  static List<ModelHasRoles> parseArticulos(String responseBody) {
+  static List<ModelHasRoles> parseStringToList(String responseBody) {
     final parsed =
         convert.jsonDecode(responseBody).cast<Map<String, dynamic>>();
     List<ModelHasRoles> list = parsed
         .map<ModelHasRoles>((json) => ModelHasRoles.fromJson(json))
         .toList();
     return list;
+  }
+
+  List<ModelHasRoles> parseDynamicToList(dynamic listData) =>
+      listData.map<ModelHasRoles>((e) => ModelHasRoles.fromJson(e)).toList();
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }

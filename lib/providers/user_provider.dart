@@ -155,10 +155,10 @@ class UserProvider extends ChangeNotifier {
         empresa = Empresa(
             id: 0,
             nit: nitController.text,
-            razonSocial: razonSocialController.text,
+            razon_social: razonSocialController.text,
             propietario: nombreController.text,
-            userId: user.id,
-            perfilId: 0);
+            user_id: user.id,
+            perfil_id: 0);
         empresa.perfil = perfil;
         httpResponsse = await EmpresaController().insertar(empresa);
       } else if (httpResponsse.messageError) {
@@ -247,14 +247,14 @@ class UserProvider extends ChangeNotifier {
     if (!formProfileKey.currentState!.validate()) return;
     empresa = Empresa(
       id: user.empresa.id,
-      userId: user.id,
-      perfilId: user.empresa.perfilId,
+      user_id: user.id,
+      perfil_id: user.empresa.perfil_id,
       nit: nitController.text,
-      razonSocial: razonSocialController.text,
+      razon_social: razonSocialController.text,
       propietario: nombreController.text,
     );
     empresa.perfil = Perfil(
-        id: user.empresa.perfilId,
+        id: user.empresa.perfil_id,
         celular: celularController.text,
         direccion: direccionController.text,
         nombre: nombreController.text,
@@ -296,7 +296,7 @@ class UserProvider extends ChangeNotifier {
     emailController.text = usuario.email;
     userloginController.text = usuario.userLogin;
     nitController.text = usuario.empresa.nit;
-    razonSocialController.text = usuario.empresa.razonSocial;
+    razonSocialController.text = usuario.empresa.razon_social;
     celularController.text = usuario.empresa.perfil.celular;
     direccionController.text = usuario.empresa.perfil.direccion;
     isEmpresa = usuario.isEmpresa;

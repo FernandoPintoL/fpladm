@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<MenuAppProvider>(
@@ -30,9 +31,12 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Soluciones LP',
         theme: ThemeData.dark().copyWith(
+          visualDensity: VisualDensity.adaptivePlatformDensity,
           scaffoldBackgroundColor: bgColor,
           textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
-              .apply(bodyColor: Colors.white),
+              .apply(
+                  bodyColor: Colors.white,
+                  fontSizeFactor: mediaQuery.textScaleFactor.clamp(1, 1.4)),
           canvasColor: secondaryColor,
         ),
         routes: {

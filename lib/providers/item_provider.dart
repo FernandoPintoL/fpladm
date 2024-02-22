@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fpladm/app/models/http_response.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../app/controller/item_controller.dart';
 import '../app/models/item_model.dart';
 import '../view/components/widget/dialog.dart';
@@ -20,13 +22,13 @@ class ItemProvider extends ChangeNotifier {
   TextEditingController precioCostoController = TextEditingController();
   TextEditingController precioVentaController = TextEditingController();
 
-  String titleForm = "REGISTRA TU NUEVO ITEM";
   bool isRegister = true;
-  String tittleButtom = "Registrar Item";
 
-  Uint8List? image;
-  File? selectedImage;
-  XFile? returnImage;
+  ImagePicker picker = ImagePicker();
+  Uint8List? imageList;
+  File? fileImage;
+  XFile? imageXFile;
+  PlatformFile? platformFile;
 
   ItemProvider() {
     cargandoLista("");
@@ -38,6 +40,11 @@ class ItemProvider extends ChangeNotifier {
     detalleController.clear();
     precioCostoController.clear();
     precioVentaController.clear();
+    imageList = null;
+    fileImage = null;
+    imageXFile = null;
+    platformFile = null;
+    isLoading = false;
     notifyListeners();
   }
 
@@ -60,10 +67,30 @@ class ItemProvider extends ChangeNotifier {
 
   void openFormularioRegister() {
     clearInputs();
-    titleForm = "REGISTRA NUEVO ITEM";
-    tittleButtom = "Registra nuevo item";
     isRegister = true;
     item = Item();
+    notifyListeners();
+  }
+
+  void cargarDatosItem() {
+    httpResponsse = HttpResponsse();
+    item.detalle = detalleController.text;
+    item.precioCosto = double.tryParse(precioCostoController.text.toString())!;
+    item.precioVenta = double.tryParse(precioVentaController.text.toString())!;
+    item.isHabilitado = true;
+    notifyListeners();
+  }
+
+  void openFormUpdate(Item item) {
+    imageList = null;
+    fileImage = null;
+    imageXFile = null;
+    platformFile = null;
+    this.item = item;
+    isRegister = false;
+    detalleController.text = item.detalle;
+    precioCostoController.text = item.precioCosto.toString();
+    precioVentaController.text = item.precioVenta.toString();
     notifyListeners();
   }
 
@@ -84,48 +111,75 @@ class ItemProvider extends ChangeNotifier {
     }
   }
 
-  void cargarDatosItem() {
-    item.detalle = detalleController.text;
-    item.precioCosto = double.tryParse(precioCostoController.text.toString())!;
-    item.precioVenta = double.tryParse(precioVentaController.text.toString())!;
-    item.isHabilitado = true;
-    notifyListeners();
-  }
-
   void registrando_update(BuildContext context) async {
-    isLoading = true;
-    notifyListeners();
-    cargarDatosItem();
-    if (isRegister) {
-      httpResponsse = await controller.insertar(item);
-      if (httpResponsse.success) {
-        item = Item.fromJson(httpResponsse.data);
-        notifyListeners();
+    try {
+      isLoading = true;
+      notifyListeners();
+      cargarDatosItem();
+      if (isRegister) {
+        httpResponsse = await controller.insertar(item);
+        if (httpResponsse.success) {
+          item = Item.fromJson(httpResponsse.data);
+        }
+        if (!context.mounted) return;
+        DialogMessage.dialog(
+            context,
+            httpResponsse.success ? DialogType.success : DialogType.error,
+            httpResponsse.message.toString(),
+            httpResponsse.data.toString(), () async {
+          if (httpResponsse.success) {
+            clearInputs();
+          }
+        });
+      } else {
+        if (!context.mounted) return;
+        if (kIsWeb) {
+          print("enviando salida web");
+          await controller
+              .subirfileUint8list("items/uploadimage", imageList!, item.id)
+              .then((value) {
+            print("terminar");
+          });
+        } else {
+          await controller.actualizarTodo(item, fileImage!).whenComplete(() {
+            print("salimos de la llamada 1");
+            DialogMessage.dialog(
+                context,
+                httpResponsse.success ? DialogType.success : DialogType.error,
+                httpResponsse.message.toString(),
+                httpResponsse.data.toString(), () async {
+              if (httpResponsse.success) {
+                clearInputs();
+              }
+            });
+          }).then((value) async {
+            httpResponsse = value;
+          });
+        }
       }
-    } else {
-      httpResponsse = await controller.actualizar(item);
-    }
-    isLoading = false;
-    notifyListeners();
-    if (!context.mounted) return;
-    DialogMessage.dialog(
-        context,
-        httpResponsse.success ? DialogType.success : DialogType.error,
-        httpResponsse.message.toString(),
-        httpResponsse.data.toString(), () async {
-      if (httpResponsse.success) {
-        formKey.currentState!.reset();
-        cargandoLista("");
-        clearInputs();
-      }
-    });
-  }
+      isLoading = false;
+      cargandoLista("");
+      print(httpResponsse.toString());
+      notifyListeners();
+      //if (!context.mounted) return;
 
-  void openFormUpdate(Item item) {
-    detalleController.text = item.detalle;
-    precioCostoController.text = item.precioCosto.toString();
-    precioVentaController.text = item.precioVenta.toString();
-    notifyListeners();
+      /*DialogMessage.dialog(
+          context,
+          httpResponsse.success ? DialogType.success : DialogType.error,
+          httpResponsse.message.toString(),
+          httpResponsse.data.toString(), () async {
+        if (httpResponsse.success) {
+          cargandoLista("");
+          clearInputs();
+        }
+      });*/
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+    }
   }
 
   void eliminando(BuildContext context) async {
@@ -146,23 +200,109 @@ class ItemProvider extends ChangeNotifier {
   }
 
   void subirImagenView(BuildContext context) async {
-    if (!formKey.currentState!.mounted) return;
-    if (formKey.currentState!.validate()) {
-      if (!context.mounted) return;
-      DialogMessage.dialog(context, DialogType.question,
-          "Estas seguro de subir esta imagen?", "", () async {
-        uploadImage();
-      });
-    }
+    httpResponsse = HttpResponsse();
+    notifyListeners();
+    if (!context.mounted) return;
+    DialogMessage.dialog(
+        context, DialogType.question, "Estas seguro de subir esta imagen?", "",
+        () async {
+      uploadImage(context);
+    });
   }
 
-  void uploadImage() async {
+  void uploadImage(BuildContext context) async {
     isLoading = true;
     notifyListeners();
-    await controller.cargarImage(item.id, selectedImage!).then((value) {
-      httpResponsse = value;
+    await controller
+        .sendDioFile(imageList!, "items/uploadimage", item.id)
+        .then((value) {
       isLoading = false;
       notifyListeners();
     });
+  }
+
+  void pickImageGalery(BuildContext context) async {
+    try {
+      imageXFile = await picker.pickImage(source: ImageSource.gallery);
+      if (imageXFile == null) {
+        imageXFile = null;
+        fileImage = null;
+        notifyListeners();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+        DialogMessage.dialog(context, DialogType.info,
+            "Ninguna imagen fue seleccionada", "", () {});
+        return;
+      } else {
+        fileImage = File(imageXFile!.path);
+        imageList = File(imageXFile!.path).readAsBytesSync();
+        notifyListeners();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+    }
+  }
+
+  void pickImageGaleryWeb(BuildContext context) async {
+    try {
+      FilePickerResult? result =
+          await FilePicker.platform.pickFiles(type: FileType.image);
+      if (result == null) {
+        platformFile = null;
+        notifyListeners();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+        DialogMessage.dialog(
+            context, DialogType.info, "Ninguna imagen fue tomada", "", () {});
+        return;
+      } else {
+        platformFile = result.files.first;
+        imageList = platformFile!.bytes!;
+        notifyListeners();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      print(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+    }
+  }
+
+  void pickImageCamera(BuildContext context) async {
+    try {
+      imageXFile = await picker.pickImage(source: ImageSource.camera);
+      if (imageXFile == null) {
+        imageXFile = null;
+        fileImage = null;
+        notifyListeners();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+        DialogMessage.dialog(
+            context, DialogType.info, "Ninguna imagen fue tomada", "", () {});
+        return;
+      } else {
+        fileImage = File(imageXFile!.path);
+        imageList = File(imageXFile!.path).readAsBytesSync();
+        notifyListeners();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+    }
   }
 }

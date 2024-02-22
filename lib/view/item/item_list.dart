@@ -3,12 +3,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fpladm/providers/item_provider.dart';
 import 'package:fpladm/view/item/form_register_item.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '../../app/models/item_model.dart';
 import '../components/widget/dialog.dart';
 import '../components/widget/image_component.dart';
 import '../config/pallet.dart';
 import '../page_gestion/card_list.dart';
+import '../upload_image/upload_image.dart';
 
 class ItemList extends StatelessWidget {
   List<Item> listado;
@@ -26,6 +28,7 @@ class ItemList extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text("COD: ${listado[index].id.toString()}"),
                 Text("${listado[index].precioCosto} BS"),
                 Text(
                   listado[index].isHabilitado ? "Habilitado" : "Desahabilitado",
@@ -37,10 +40,11 @@ class ItemList extends StatelessWidget {
               ],
             ),
             leading: ImageComponent(
-              size: 80,
+              size: 30,
               imageUrl: listado[index].photoPath.toString(),
               errorWidget:
                   const CircleAvatar(child: Icon(Icons.warning_amber_sharp)),
+              function: () {},
             ),
             trailing: IconButton(
               onPressed: () async {
@@ -61,13 +65,14 @@ class ItemList extends StatelessWidget {
             ),
             function: () {
               context.read<ItemProvider>().openFormUpdate(listado[index]);
-              context.read<ItemProvider>().isRegister = false;
-              context.read<ItemProvider>().item = listado[index];
               Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => FormRegisterUpdateItem()),
-              );
+                  context,
+                  PageTransition(
+                    child: const FormRegisterUpdateItem(),
+                    type: PageTransitionType.scale,
+                    alignment: Alignment.centerLeft,
+                    duration: const Duration(seconds: 1),
+                  ));
             },
           );
         });

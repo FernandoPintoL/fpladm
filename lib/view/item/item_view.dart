@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fpladm/view/item/form_register_item.dart';
 import 'package:fpladm/view/item/item_list.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '../../providers/item_provider.dart';
 import '../page_gestion/page_gestion.dart';
@@ -20,7 +22,9 @@ class _ItemViewState extends State<ItemView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('GESTION DE ITEM'),
+        title: Text('GESTION DE ITEM',
+            style: GoogleFonts.albertSans(
+                fontSize: 21, fontWeight: FontWeight.w300)),
       ),
       body: SafeArea(
         child: PageGestion(
@@ -52,8 +56,12 @@ class _ItemViewState extends State<ItemView> {
           context.read<ItemProvider>().openFormularioRegister();
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => const FormRegisterUpdateItem()),
+            PageTransition(
+              child: const FormRegisterUpdateItem(),
+              type: PageTransitionType.scale,
+              alignment: Alignment.centerLeft,
+              duration: const Duration(seconds: 1),
+            ),
           );
         },
         tooltip: "Registra un nuevo item",

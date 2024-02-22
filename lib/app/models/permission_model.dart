@@ -2,33 +2,35 @@ import 'dart:convert' as convert;
 
 class Permission {
   late int id;
-
-  late String name, guardName;
-
+  late String name, guard_name;
   DateTime creado = DateTime.now(), actualizado = DateTime.now();
 
-  Permission({this.id = 0, this.name = '', this.guardName = ''});
+  Permission({this.id = 0, this.name = '', this.guard_name = ''});
 
-  Permission.fromJson(Map<String, dynamic> json)
-      : id = int.tryParse(json['id'].toString())!,
-        name = json['name'].toString(),
-        guardName = json['guard_name'].toString(),
-        creado = DateTime.parse(json['created_at'].toString()),
-        actualizado = DateTime.parse(json['updated_at'].toString());
+  factory Permission.fromJson(Map<String, dynamic> json) {
+    Permission moneda = Permission(
+        id: int.tryParse(json['id']!.toString())!,
+        name: json['name'].toString(),
+        guard_name: json['simbolo'].toString());
+    return moneda;
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id.toString(),
         'name': name.toString(),
-        'guard_name': guardName.toString()
+        'guard_name': guard_name.toString()
       };
 
-  static List<Permission> parseResponseBody(String responseBody) {
+  static List<Permission> parseStringToList(String responseBody) {
     final parsed =
         convert.jsonDecode(responseBody).cast<Map<String, dynamic>>();
     List<Permission> list =
         parsed.map<Permission>((json) => Permission.fromJson(json)).toList();
     return list;
   }
+
+  List<Permission> parseDynamicToList(dynamic listData) =>
+      listData.map<Permission>((e) => Permission.fromJson(e)).toList();
 
   String fechaCreado() {
     return '${creado.day}/${creado.month}/${creado.year}';

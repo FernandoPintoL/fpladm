@@ -29,6 +29,7 @@ class UsersList extends StatelessWidget {
               imageUrl: listado[index].profilePhotoUrl.toString(),
               errorWidget:
                   const CircleAvatar(child: Icon(Icons.warning_amber_sharp)),
+              function: () {},
             ),
             trailing: IconButton(
               onPressed: () async {

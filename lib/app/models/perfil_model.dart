@@ -46,13 +46,16 @@ class Perfil {
         'estado': estado.toString()
       };
 
-  static List<Perfil> parseArticulos(String responseBody) {
+  static List<Perfil> parseStringToList(String responseBody) {
     final parsed =
         convert.jsonDecode(responseBody).cast<Map<String, dynamic>>();
     List<Perfil> list =
         parsed.map<Perfil>((json) => Perfil.fromJson(json)).toList();
     return list;
   }
+
+  List<Perfil> parseDynamicToList(dynamic listData) =>
+      listData.map<Perfil>((e) => Perfil.fromJson(e)).toList();
 
   @override
   String toString() {

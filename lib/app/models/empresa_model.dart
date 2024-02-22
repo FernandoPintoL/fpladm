@@ -2,8 +2,8 @@ import 'dart:convert' as convert;
 import 'perfil_model.dart';
 
 class Empresa {
-  late int id, userId, perfilId;
-  String propietario, nit, razonSocial;
+  late int id, user_id, perfil_id;
+  String propietario, nit, razon_social;
   DateTime creado = DateTime.now(), actualizado = DateTime.now();
   dynamic nombreError = "",
       userloginError = "",
@@ -14,33 +14,35 @@ class Empresa {
 
   Empresa(
       {this.id = 0,
-      this.userId = 0,
-      this.perfilId = 0,
+      this.user_id = 0,
+      this.perfil_id = 0,
       this.propietario = "",
       this.nit = "",
-      this.razonSocial = ""});
+      this.razon_social = ""});
 
-  Empresa.fromJson(Map<String, dynamic> json)
-      : id = int.tryParse(json['id'].toString())!,
-        userId = int.tryParse(json['user_id'].toString())!,
-        perfilId = int.tryParse(json['perfil_id'].toString())!,
-        propietario = json['propietario'].toString(),
-        nit = json['nit'].toString(),
-        razonSocial = json['razonSocial'].toString(),
-        perfil =
-            json["perfil"] == null ? Perfil() : Perfil.fromJson(json["perfil"]);
+  // CUANDO RECIVO DE MI API
+  factory Empresa.fromJson(Map<String, dynamic> json) {
+    Empresa object = Empresa(
+        id: int.tryParse(json['id']!.toString())!,
+        user_id: int.tryParse(json['user_id']!.toString())!,
+        perfil_id: int.tryParse(json['perfil_id']!.toString())!,
+        propietario: json['propietario'].toString(),
+        nit: json['nit'].toString(),
+        razon_social: json['razon_social'].toString());
+    return object;
+  }
 
+  //CUANDO ENVIO A MI API
   Map<String, dynamic> toJson() => {
         'id': id.toString(),
-        'user_id': userId.toString(),
-        'perfil_id': perfilId.toString(),
-        'propietario': propietario,
-        'nit': nit,
-        'razonSocial': razonSocial,
-        'perfil': perfil.toJson()
+        'user_id': user_id.toString(),
+        'perfil_id': perfil_id.toString(),
+        'propietario': propietario.toString(),
+        'razon_social': razon_social.toString(),
+        'nit': nit.toString()
       };
 
-  static List<Empresa> parseUsuarios(String responseBody) {
+  static List<Empresa> parseStringToList(String responseBody) {
     final parsed =
         convert.jsonDecode(responseBody).cast<Map<String, dynamic>>();
     List<Empresa> list =
@@ -48,9 +50,8 @@ class Empresa {
     return list;
   }
 
-  List<Empresa> parseUsers(dynamic listData) {
-    return listData.map<Empresa>((e) => Empresa.fromJson(e)).toList();
-  }
+  List<Empresa> parseDynamicToList(dynamic listData) =>
+      listData.map<Empresa>((e) => Empresa.fromJson(e)).toList();
 
   String fechaCreado() {
     return '${creado.day}/${creado.month}/${creado.year}';

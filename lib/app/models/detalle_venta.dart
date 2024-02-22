@@ -1,56 +1,53 @@
 import 'dart:convert' as convert;
-import 'package:fpladm/app/models/user_model.dart';
 
-import 'perfil_model.dart';
-
-class Cliente {
-  late int id, user_id, perfil_id;
-  String ci;
+class DetalleVenta {
+  late int id, venta_id, item_id;
+  late double sub_total, cantidad;
   DateTime creado = DateTime.now(), actualizado = DateTime.now();
-  dynamic nombreError = "",
-      userloginError = "",
-      emailError = "",
-      passwordError = "";
 
-  DateTime now = DateTime.now();
-  Perfil perfil = Perfil();
-  Usuario user = Usuario();
+  dynamic nameError = "",
+      descripcionError = "",
+      precioCostoError = "",
+      precioVentaError = "";
 
-  Cliente({
-    this.id = 0,
-    this.user_id = 0,
-    this.perfil_id = 0,
-    this.ci = "",
-  });
+  DetalleVenta(
+      {this.id = 0,
+      this.venta_id = 0,
+      this.item_id = 0,
+      this.sub_total = 0,
+      this.cantidad = 0});
 
   // CUANDO RECIVO DE MI API
-  factory Cliente.fromJson(Map<String, dynamic> json) {
-    Cliente object = Cliente(
+  factory DetalleVenta.fromJson(Map<String, dynamic> json) {
+    DetalleVenta object = DetalleVenta(
         id: int.tryParse(json['id']!.toString())!,
-        perfil_id: int.tryParse(json['perfil_id']!.toString())!,
-        user_id: int.tryParse(json['user_id']!.toString())!,
-        ci: json['ci'].toString());
+        venta_id: int.tryParse(json['venta_id']!.toString())!,
+        item_id: int.tryParse(json['item_id']!.toString())!,
+        sub_total: double.tryParse(json['sub_total']!.toString())!,
+        cantidad: double.tryParse(json['cantidad']!.toString())!);
     return object;
   }
 
   //CUANDO ENVIO A MI API
   Map<String, dynamic> toJson() => {
         'id': id.toString(),
-        'perfil_id': perfil_id.toString(),
-        'user_id': user_id.toString(),
-        'ci': ci.toString()
+        'venta_id': venta_id.toString(),
+        'item_id': item_id.toString(),
+        'cantidad': cantidad.toString(),
+        'sub_total': sub_total.toString()
       };
 
-  static List<Cliente> parseStringToList(String responseBody) {
+  static List<DetalleVenta> parseStringToList(String responseBody) {
     final parsed =
         convert.jsonDecode(responseBody).cast<Map<String, dynamic>>();
-    List<Cliente> list =
-        parsed.map<Cliente>((json) => Cliente.fromJson(json)).toList();
+    List<DetalleVenta> list = parsed
+        .map<DetalleVenta>((json) => DetalleVenta.fromJson(json))
+        .toList();
     return list;
   }
 
-  List<Cliente> parseDynamicToList(dynamic listData) =>
-      listData.map<Cliente>((e) => Cliente.fromJson(e)).toList();
+  List<DetalleVenta> parseDynamicToList(dynamic listData) =>
+      listData.map<DetalleVenta>((e) => DetalleVenta.fromJson(e)).toList();
 
   String fechaCreado() {
     return '${creado.day}/${creado.month}/${creado.year}';

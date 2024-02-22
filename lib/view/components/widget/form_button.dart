@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class FormButtom extends StatelessWidget {
   Function ejecutar;
   String title;
-  Icon icon;
+  Widget icon;
 
   FormButtom(
       {super.key,

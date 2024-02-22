@@ -3,7 +3,9 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fpladm/providers/item_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import '../components/widget/dialog.dart';
 import '../components/widget/image_component.dart';
@@ -35,87 +37,178 @@ class _UploadImageState extends State<UploadImage> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.read<ItemProvider>().item.detalle),
+        title: Text(context.read<ItemProvider>().item.detalle,
+            style: GoogleFonts.lobster()),
+        backgroundColor: Colors.transparent,
       ),
       body: context.watch<ItemProvider>().isLoading
           ? Loading(text: "Cargando Imagen...")
-          : Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(defaultPadding),
-                      child: Stack(
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 35),
+                    child: Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 25, vertical: defaultPadding),
+                      decoration: BoxDecoration(
+                        color: secondaryColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          if (image != null && !kIsWeb)
-                            Column(
-                              children: [
-                                const Text("memori"),
-                                ClipRRect(
-                                  child: Image.memory(
-                                    fit: BoxFit.cover,
-                                    image!,
-                                  ),
-                                ),
-                              ],
-                            )
-                          else
-                            Column(
-                              children: [
-                                const Text("component"),
-                                ImageComponent(
-                                    imageUrl: widget.photoPath,
-                                    errorWidget: const CircleAvatar(
-                                        child:
-                                            Icon(Icons.person_outline_rounded)),
-                                    size:
-                                        MediaQuery.of(context).size.width > 1000
-                                            ? MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.35
-                                            : MediaQuery.of(context)
-                                                    .size
-                                                    .width -
-                                                150),
+                          const Text(
+                            "DATOS",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          RichText(
+                            text: TextSpan(
+                              text: 'COD: ',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                              children: <TextSpan>[
+                                TextSpan(
+                                    text: context
+                                        .read<ItemProvider>()
+                                        .item
+                                        .id
+                                        .toString(),
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w200)),
                               ],
                             ),
-                          Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: IconButton(
-                                  style: const ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStatePropertyAll<Color>(
-                                              Colors.green)),
-                                  onPressed: () {
-                                    showImagePickerOption(context);
-                                  },
-                                  icon: const Icon(
-                                    Icons.add_a_photo_outlined,
-                                    color: Colors.white,
-                                  ))),
+                          ),
+                          RichText(
+                            text: TextSpan(
+                              text: 'PRECIO COSTO: ',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                              children: <TextSpan>[
+                                TextSpan(
+                                    text:
+                                        "${context.read<ItemProvider>().item.precioCosto.toString()} Bs",
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w200)),
+                              ],
+                            ),
+                          ),
+                          RichText(
+                            text: TextSpan(
+                              text: 'PRECIO VENTA: ',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                              children: <TextSpan>[
+                                TextSpan(
+                                    text:
+                                        "${context.read<ItemProvider>().item.precioVenta.toString()} Bs",
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w200)),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                        onPressed: () {
-                          DialogMessage.dialog(
-                              context,
-                              DialogType.question,
-                              "¿Estas seguro de subir esta imagen?",
-                              "", () async {
-                            //subirImagen();
-                            widget.subirImage();
-                          });
-                        },
-                        child: const Text("Subir Imagen"))
-                  ],
-                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: defaultPadding,
+                        vertical: defaultPadding + 40),
+                    child: Stack(
+                      children: [
+                        if (context.watch<ItemProvider>().imageList != null &&
+                            !kIsWeb)
+                          ClipRRect(
+                            child: Image.memory(
+                              fit: BoxFit.cover,
+                              context.read<ItemProvider>().imageList!,
+                            ),
+                          )
+                        else
+                          ImageComponent(
+                              imageUrl:
+                                  context.watch<ItemProvider>().item.photoPath,
+                              errorWidget: ClipOval(
+                                child: Material(
+                                  color: Colors.blue,
+                                  child: InkWell(
+                                    splashColor: Colors.redAccent,
+                                    onTap: () {
+                                      showImagePickerOption(context);
+                                    },
+                                    child: const SizedBox(
+                                      height: 150,
+                                      width: 150,
+                                      child: Icon(
+                                        Icons.shopping_bag_outlined,
+                                        size: 90,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              function: () {
+                                if (context.read<ItemProvider>().isRegister)
+                                  return;
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                      child: UploadImage(
+                                        name: context
+                                            .read<ItemProvider>()
+                                            .item
+                                            .detalle,
+                                        photoPath: context
+                                            .read<ItemProvider>()
+                                            .item
+                                            .photoPath,
+                                        id: context
+                                            .read<ItemProvider>()
+                                            .item
+                                            .id,
+                                        subirImage: () {},
+                                      ),
+                                      type: PageTransitionType.scale,
+                                      alignment: Alignment.bottomCenter,
+                                      duration: const Duration(seconds: 1),
+                                    ));
+                              },
+                              size: 120),
+                        Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: IconButton(
+                                style: const ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStatePropertyAll<Color>(
+                                            Colors.green)),
+                                onPressed: () {
+                                  showImagePickerOption(context);
+                                },
+                                icon: const Icon(
+                                  Icons.add_a_photo_outlined,
+                                  color: Colors.white,
+                                ))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                      onPressed: () async {
+                        context.read<ItemProvider>().subirImagenView(context);
+                      },
+                      child: const Text("Subir Imagen"))
+                ],
               ),
             ),
     );
@@ -176,23 +269,29 @@ class _UploadImageState extends State<UploadImage> {
   }
 
   void _pickImageFormGaleria() async {
-    returnImage = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (returnImage == null) return;
+    context.read<ItemProvider>().imageXFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (context.read<ItemProvider>().imageXFile == null) return;
     setState(() {
-      selectedImage = File(returnImage!.path);
-      image = File(returnImage!.path).readAsBytesSync();
+      context.read<ItemProvider>().fileImage =
+          File(context.read<ItemProvider>().imageXFile!.path);
+      context.read<ItemProvider>().imageList =
+          File(context.read<ItemProvider>().imageXFile!.path).readAsBytesSync();
     });
     Navigator.of(context).pop();
   }
 
   void _pickImageFormCamera() async {
-    final returnImage =
+    context.read<ItemProvider>().imageXFile =
         await ImagePicker().pickImage(source: ImageSource.camera);
-    if (returnImage == null) return;
-    setState(() {
-      selectedImage = File(returnImage.path);
-      image = File(returnImage.path).readAsBytesSync();
-    });
+    if (context.read<ItemProvider>().imageXFile == null) return;
+    /*setState(() {
+
+    });*/
+    context.read<ItemProvider>().fileImage =
+        File(context.read<ItemProvider>().imageXFile!.path);
+    context.read<ItemProvider>().imageList =
+        File(context.read<ItemProvider>().imageXFile!.path).readAsBytesSync();
     Navigator.of(context).pop();
   }
 

@@ -69,6 +69,7 @@ class _PerfilImageState extends State<PerfilImage> {
                               children: [
                                 const Text("component"),
                                 ImageComponent(
+                                    function: () {},
                                     imageUrl: widget.imagePath,
                                     errorWidget: const CircleAvatar(
                                         child:

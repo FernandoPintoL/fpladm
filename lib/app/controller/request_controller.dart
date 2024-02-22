@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 import '../models/http_response.dart';
@@ -6,8 +8,24 @@ import 'package:path/path.dart';
 import 'package:async/async.dart';
 
 mixin RequestController {
-  String url = "http://192.168.1.22/apisoluciones/public/api";
+  String url = "http://192.168.1.26/apisoluciones/public/api";
+  String urlImage = "http://192.168.1.26/apisoluciones/";
   Map<String, String> header = {'Content-Type': 'application/json'};
+
+  Future<void> sendDioFile(Uint8List file, String route, int id) async {
+    try {
+      FormData formData = FormData.fromMap({
+        "file": MultipartFile.fromBytes(file, filename: "${id.toString()}.jpeg")
+      });
+
+      Response response = await Dio().post("$url/$route",
+          options: Options(headers: {"Content-Type": "multipart/form-data"}),
+          data: formData);
+      print(response.data);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 
   //EJEMPLO POST
   Future<http.Response> postResponse(String route, dynamic data) async {
@@ -39,6 +57,38 @@ mixin RequestController {
     }
   }
 
+  //CARGAR FILE UINT8LIST
+  Future<HttpResponsse> subirfileUint8list(
+      String route, Uint8List file, int id) async {
+    try {
+      HttpResponsse httpResponsse = HttpResponsse();
+      var postUri = Uri.parse('$url/$route');
+      //var postUri = Uri.parse("http://192.168.88.20/api/users/subirimage");
+      var request = http.MultipartRequest("POST", postUri);
+      //var stream = http.ByteStream(DelegatingStream(file.openRead()));
+      //var length = await file.length();
+      var multipartfile = http.MultipartFile.fromBytes("file", file.toList(),
+          filename: basename(id.toString()));
+      request.headers.addAll({"Content-Type": "multipart/form-data"});
+      //request.headers.addAll(header);
+      request.files.add(multipartfile);
+      request.fields['id'] = id.toString();
+      var response = await request.send();
+      response.stream.transform(convert.utf8.decoder).listen((value) {
+        print(value);
+        httpResponsse = HttpResponsse.fromJson(convert.jsonDecode(value));
+      });
+      return httpResponsse;
+    } on Exception catch (e) {
+      return HttpResponsse(
+          messageError: true,
+          message: e.toString(),
+          success: false,
+          isRequest: false,
+          data: []);
+    }
+  }
+
   //CARGAR FILE
   Future<HttpResponsse> subirfile(String route, File file, int id) async {
     try {
@@ -51,12 +101,42 @@ mixin RequestController {
       var multipartfile = await http.MultipartFile("file", stream, length,
           filename: basename(id.toString()));
       request.headers.addAll({"Content-Type": "multipart/form-data"});
-      request.headers.addAll(header);
+      //request.headers.addAll(header);
       request.files.add(multipartfile);
       request.fields['id'] = id.toString();
       var response = await request.send();
       response.stream.transform(convert.utf8.decoder).listen((value) {
         print(value);
+        httpResponsse = HttpResponsse.fromJson(convert.jsonDecode(value));
+      });
+      return httpResponsse;
+    } on Exception catch (e) {
+      return HttpResponsse(
+          messageError: true,
+          message: e.toString(),
+          success: false,
+          isRequest: false,
+          data: []);
+    }
+  }
+
+  Future<HttpResponsse> uploadImage(String route, File file, int id) async {
+    try {
+      HttpResponsse httpResponsse = HttpResponsse();
+      var postUri = Uri.parse('$url/$route');
+      //var postUri = Uri.parse("http://192.168.88.20/api/users/subirimage");
+      var request = http.MultipartRequest("POST", postUri);
+      var stream = http.ByteStream(DelegatingStream(file.openRead()));
+      var length = await file.length();
+      var multipartfile = http.MultipartFile("file", stream, length,
+          filename: basename(file.path));
+      request.headers.addAll({"Content-Type": "multipart/form-data"});
+      request.headers.addAll(header);
+      request.files.add(multipartfile);
+      request.fields['id'] = id.toString();
+      var response = await request.send();
+      response.stream.transform(convert.utf8.decoder).listen((value) {
+        print(value.toString());
         httpResponsse = HttpResponsse.fromJson(convert.jsonDecode(value));
       });
       return httpResponsse;
@@ -77,7 +157,6 @@ mixin RequestController {
           headers: header, body: convert.jsonEncode(data));
       HttpResponsse httpResponsse =
           HttpResponsse.fromJson(convert.jsonDecode(response.body));
-      print(httpResponsse.toString());
       return httpResponsse;
     } on Exception catch (e) {
       return HttpResponsse(
@@ -123,13 +202,10 @@ mixin RequestController {
   Future<HttpResponsse> actualizarResponse(
       String route, dynamic data, int id) async {
     try {
-      print(route);
       http.Response response = await http.put(
           Uri.parse('$url/$route/${id.toString()}'),
           headers: {'Content-Type': 'application/json;charset=utf-8'},
           body: convert.jsonEncode(data));
-      print(response.statusCode.toString());
-      print(convert.jsonDecode(response.body));
       if (response.statusCode == 200) {
         HttpResponsse httpResponsse =
             HttpResponsse.fromJson(convert.jsonDecode(response.body));

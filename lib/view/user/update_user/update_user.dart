@@ -52,6 +52,7 @@ class _UpdateUserState extends State<UpdateUser> {
               },
               child: ImageComponent(
                   size: 50,
+                  function: () {},
                   errorWidget: const CircleAvatar(
                       child: Icon(Icons.person_outline_rounded)),
                   imageUrl: context

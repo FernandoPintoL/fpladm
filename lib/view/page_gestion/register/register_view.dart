@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RegisterView extends StatelessWidget {
   String title;
@@ -17,7 +18,9 @@ class RegisterView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(title.toUpperCase().toString(),
+            style: GoogleFonts.albertSans(
+                fontSize: 22, fontWeight: FontWeight.w100)),
         actions: actions,
         backgroundColor: Colors.transparent,
       ),

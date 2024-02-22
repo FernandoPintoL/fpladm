@@ -22,7 +22,7 @@ class Item {
 
   // CUANDO RECIVO DE MI API
   factory Item.fromJson(Map<String, dynamic> json) {
-    Item item = Item(
+    Item object = Item(
         id: int.tryParse(json['id'].toString())!,
         detalle: json['detalle'].toString(),
         precioCosto: double.tryParse(json['precio_costo']!.toString())!,
@@ -30,7 +30,7 @@ class Item {
         photoPath: json['photo_path'].toString(),
         isHabilitado:
             int.tryParse(json['isHabilitado']!.toString()) == 1 ? true : false);
-    return item;
+    return object;
   }
 
   //CUANDO ENVIO A MI API
